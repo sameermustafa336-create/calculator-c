@@ -3,98 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة الإعفاء المخصصة</title>
+    <title>نظام حساب الإعفاء الشامل - العراق</title>
     <style>
-        :root { --main: #2980b9; --success: #27ae60; --error: #e74c3c; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f3f6; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--main); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .row { display: flex; align-items: center; margin-bottom: 12px; }
-        label { flex: 1; font-weight: bold; color: #444; }
-        input { width: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-size: 1rem; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--main); box-shadow: 0 0 5px rgba(41, 128, 185, 0.3); }
-        .btn { width: 100%; padding: 15px; background: var(--main); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn:hover { background: #21618c; }
-        .result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; text-align: center; }
-        .ex-gen { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .ex-none { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .val-box { display: flex; justify-content: space-around; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { background: white; max-width: 800px; margin: auto; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 10px solid #005a2b; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .logo { width: 100px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #005a2b; color: white; }
+        input { width: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; text-align: center; }
+        .btn-calc { display: block; width: 100%; padding: 15px; background: #005a2b; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-calc:hover { background: #00401f; }
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; line-height: 1.8; }
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>حاسبة الإعفاء 🎓</h2>
-    
-    <div id="fields">
-        </div>
-
-    <button class="btn" onclick="calculate()">احسب النتيجة</button>
-
-    <div id="resultBox" class="result">
-        <h3 id="statusMsg"></h3>
-        <div class="val-box">
-            <span>المعدل: <b id="resAvg">0</b></span>
-            <span>أقل درجة: <b id="resMin">0</b></span>
-        </div>
-        <div id="fardiMsg" style="margin-top: 15px; font-size: 0.9rem; text-align: right;"></div>
+<div class="container">
+    <div class="header">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Seal_of_the_Ministry_of_Education_of_Iraq.svg/512px-Seal_of_the_Ministry_of_Education_of_Iraq.svg.png" class="logo">
+        <h2>جمهورية العراق - وزارة التربية</h2>
+        <h3>حاسبة السعي السنوي والإعفاء الفردي</h3>
     </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>المادة</th>
+                <th>الفصل 1</th>
+                <th>نصف السنة</th>
+                <th>الفصل 2</th>
+                <th>السعي</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody id="subjectsTable">
+            </tbody>
+    </table>
+
+    <button class="btn-calc" onclick="calculateAll()">احسب السعي والنتائج</button>
+
+    <div id="finalResult" class="result-box"></div>
 </div>
 
 <script>
-    // قائمة المواد المحدثة
-    const subjects = ["الرياضيات", "الإنجليزي", "الفيزياء", "إسلامية", "أحياء", "كيمياء", "حاسوب", "عربي", "الأخلاقية"];
+    const subjects = ["الرياضيات", "الانجليزي", "الفيزياء", "الإسلامية", "الأحياء", "الكيمياء", "الحاسوب", "العربي"];
+    const tableBody = document.getElementById('subjectsTable');
 
-    // توليد خانات الإدخال
-    const fieldsDiv = document.getElementById('fields');
-    subjects.forEach((sub, i) => {
-        fieldsDiv.innerHTML += `
-            <div class="row">
-                <label>${sub}</label>
-                <input type="number" class="score" placeholder="0" min="0" max="100">
-            </div>
+    // توليد الصفوف للمواد
+    subjects.forEach((sub, index) => {
+        tableBody.innerHTML += `
+            <tr>
+                <td><strong>${sub}</strong></td>
+                <td><input type="number" id="f1_${index}" min="0" max="100"></td>
+                <td><input type="number" id="mid_${index}" min="0" max="100"></td>
+                <td><input type="number" id="f2_${index}" min="0" max="100"></td>
+                <td id="saye_${index}">-</td>
+                <td id="status_${index}">-</td>
+            </tr>
         `;
     });
 
-    function calculate() {
-        const inputs = document.querySelectorAll('.score');
-        let total = 0;
-        let scores = [];
-        let fardi = [];
+    function calculateAll() {
+        let totalSaye = 0;
+        let count = subjects.length;
 
-        inputs.forEach((input, i) => {
-            let val = parseFloat(input.value) || 0;
-            total += val;
-            scores.push(val);
-            // الإعفاء الفردي عادة يكون من 90 فما فوق
-            if (val >= 90) fardi.push(subjects[i]);
+        subjects.forEach((sub, index) => {
+            let f1 = parseFloat(document.getElementById(`f1_${index}`).value) || 0;
+            let mid = parseFloat(document.getElementById(`mid_${index}`).value) || 0;
+            let f2 = parseFloat(document.getElementById(`f2_${index}`).value) || 0;
+
+            // حساب السعي السنوي (مجموعهم تقسيم 3)
+            let saye = Math.round((f1 + mid + f2) / 3);
+            totalSaye += saye;
+
+            document.getElementById(`saye_${index}`).innerText = saye;
+
+            let statusTd = document.getElementById(`status_${index}`);
+            if (saye >= 90) {
+                statusTd.innerHTML = '<span class="status-pass">معفى فردي</span>';
+            } else {
+                statusTd.innerHTML = '<span class="status-fail">غير معفى</span>';
+            }
         });
 
-        const avg = total / subjects.length;
-        const min = Math.min(...scores);
-        const resBox = document.getElementById('resultBox');
-        const status = document.getElementById('statusMsg');
-        const fardiMsg = document.getElementById('fardiMsg');
-
-        resBox.style.display = 'block';
-        document.getElementById('resAvg').innerText = avg.toFixed(1) + "%";
-        document.getElementById('resMin').innerText = min;
-
-        // شروطك: معدل 85 وأقل درجة 75
-        if (avg >= 85 && min >= 75) {
-            resBox.className = "result ex-gen";
-            status.innerText = "🌟 مبروك.. إعفاء عام 🌟";
-            fardiMsg.innerText = "أنت معفى من جميع الامتحانات النهائية.";
-        } else {
-            resBox.className = "result ex-none";
-            status.innerText = "لا يوجد إعفاء عام";
-            
-            if (fardi.length > 0) {
-                fardiMsg.innerHTML = "<b>الإعفاء الفردي (90 فأكثر):</b><br>" + fardi.join(" - ");
-            } else {
-                fardiMsg.innerText = "للأسف لا يوجد إعفاء فردي أيضاً.";
-            }
-        }
+        let average = (totalSaye / count).toFixed(2);
+        let finalBox = document.getElementById('finalResult');
+        finalBox.style.display = "block";
+        finalBox.style.backgroundColor = "#e8f5e9";
+        
+        let generalExemption = (average >= 85) ? "مؤهل للإعفاء العام (بشرط لا توجد درجة أقل من 75)" : "غير مؤهل للإعفاء العام";
+        
+        finalBox.innerHTML = `
+            <strong>المعدل السنوي العام: ${average}</strong><br>
+            الحالة: ${generalExemption}
+        `;
     }
 </script>
 
