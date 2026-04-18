@@ -1,48 +1,102 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>صور طبيعة 4K</title>
-<style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: black;
-    color: white;
-    text-align: center;
-}
-
-h1 {
-    padding: 10px;
-}
-
-.gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 10px;
-    padding: 10px;
-}
-
-.gallery img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 10px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة الإعفاء المخصصة</title>
+    <style>
+        :root { --main: #2980b9; --success: #27ae60; --error: #e74c3c; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f3f6; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--main); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .row { display: flex; align-items: center; margin-bottom: 12px; }
+        label { flex: 1; font-weight: bold; color: #444; }
+        input { width: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-size: 1rem; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--main); box-shadow: 0 0 5px rgba(41, 128, 185, 0.3); }
+        .btn { width: 100%; padding: 15px; background: var(--main); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn:hover { background: #21618c; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; text-align: center; }
+        .ex-gen { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .ex-none { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .val-box { display: flex; justify-content: space-around; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
+    </style>
 </head>
-
 <body>
 
-<h1>🌍 مناظر طبيعية 4K</h1>
+<div class="card">
+    <h2>حاسبة الإعفاء 🎓</h2>
+    
+    <div id="fields">
+        </div>
 
-<div class="gallery">
-    <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470">
-    <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee">
-    <img src="https://images.unsplash.com/photo-1493244040629-496f6d136cc3">
-    <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b">
-    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e">
-    <img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e">
+    <button class="btn" onclick="calculate()">احسب النتيجة</button>
+
+    <div id="resultBox" class="result">
+        <h3 id="statusMsg"></h3>
+        <div class="val-box">
+            <span>المعدل: <b id="resAvg">0</b></span>
+            <span>أقل درجة: <b id="resMin">0</b></span>
+        </div>
+        <div id="fardiMsg" style="margin-top: 15px; font-size: 0.9rem; text-align: right;"></div>
+    </div>
 </div>
 
+<script>
+    // قائمة المواد المحدثة
+    const subjects = ["الرياضيات", "الإنجليزي", "الفيزياء", "إسلامية", "أحياء", "كيمياء", "حاسوب", "عربي", "الأخلاقية"];
+
+    // توليد خانات الإدخال
+    const fieldsDiv = document.getElementById('fields');
+    subjects.forEach((sub, i) => {
+        fieldsDiv.innerHTML += `
+            <div class="row">
+                <label>${sub}</label>
+                <input type="number" class="score" placeholder="0" min="0" max="100">
+            </div>
+        `;
+    });
+
+    function calculate() {
+        const inputs = document.querySelectorAll('.score');
+        let total = 0;
+        let scores = [];
+        let fardi = [];
+
+        inputs.forEach((input, i) => {
+            let val = parseFloat(input.value) || 0;
+            total += val;
+            scores.push(val);
+            // الإعفاء الفردي عادة يكون من 90 فما فوق
+            if (val >= 90) fardi.push(subjects[i]);
+        });
+
+        const avg = total / subjects.length;
+        const min = Math.min(...scores);
+        const resBox = document.getElementById('resultBox');
+        const status = document.getElementById('statusMsg');
+        const fardiMsg = document.getElementById('fardiMsg');
+
+        resBox.style.display = 'block';
+        document.getElementById('resAvg').innerText = avg.toFixed(1) + "%";
+        document.getElementById('resMin').innerText = min;
+
+        // شروطك: معدل 85 وأقل درجة 75
+        if (avg >= 85 && min >= 75) {
+            resBox.className = "result ex-gen";
+            status.innerText = "🌟 مبروك.. إعفاء عام 🌟";
+            fardiMsg.innerText = "أنت معفى من جميع الامتحانات النهائية.";
+        } else {
+            resBox.className = "result ex-none";
+            status.innerText = "لا يوجد إعفاء عام";
+            
+            if (fardi.length > 0) {
+                fardiMsg.innerHTML = "<b>الإعفاء الفردي (90 فأكثر):</b><br>" + fardi.join(" - ");
+            } else {
+                fardiMsg.innerText = "للأسف لا يوجد إعفاء فردي أيضاً.";
+            }
+        }
+    }
+</script>
+
 </body>
+</html>
